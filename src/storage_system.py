@@ -2,7 +2,7 @@ import gymnasium as gym
 import numpy as np
 
 from dataclasses import dataclass, InitVar
-from typing import List
+import typing
 
 from battery import Battery
 from degradation import DegradationModel
@@ -14,7 +14,7 @@ DTYPE_INT: np.dtype = np.int32
 
 @dataclass
 class StorageSystem:
-    batteries: InitVar[List[Battery]]
+    batteries: InitVar[typing.List[Battery]]
 
     def __post_init__(self, batteries):
         self.__batteries = batteries
@@ -37,7 +37,9 @@ class StorageSystem:
         raise NotImplementedError
 
     def action_space(self) -> gym.spaces.Space[gym.core.ActType]:
-        range_charges = np.array([battery.able_charge() for battery in self.__batteries])
+        range_charges = np.array(
+            [battery.able_charge() for battery in self.__batteries],
+        )
         able_discharges, able_charges = range_charges[:, 0], range_charges[:, 1]
 
         act_space = gym.spaces.Box(
@@ -48,7 +50,7 @@ class StorageSystem:
         return act_space
 
     @classmethod
-    def default(cls) -> "StorageSystem":
+    def default(cls) -> typing.Self:
         num_batteries = 3
         batteries = [
             Battery(
@@ -70,14 +72,14 @@ class StorageSystem:
         return storage_system
 
 
-def main():
+if __name__ == "__main__":
     np.random.seed(0)
     my_storage_system = StorageSystem.default()
 
-    import pprint
+    observation_space = my_storage_system.observation_space()
+    sample = observation_space.sample()
+    assert observation_space.contains(sample)
 
-    pprint.pprint(my_storage_system)
+    from pprint import pprint
 
-
-if __name__ == "__main__":
-    main()
+    pprint(my_storage_system)

@@ -1,7 +1,9 @@
 import numpy as np
+import typing
 from dataclasses import dataclass, InitVar
 
 DTYPE_FLOAT = np.float32
+
 
 @dataclass
 class DegradationModel:
@@ -11,7 +13,22 @@ class DegradationModel:
     def __post_init__(self, alpha, beta):
         self.__alpha = alpha
         self.__beta = beta
-        
+
     def percent_degradation(self, depth_of_discharge):
-        stress_function_degradation = self.__alpha * np.exp(-self.__beta * depth_of_discharge)
+        stress_function_degradation = self.__alpha * np.exp(
+            -self.__beta * depth_of_discharge
+        )
         return stress_function_degradation
+
+    @classmethod
+    def default(cls) -> typing.Self:
+        alpha = 0.4
+        beta = 0.5
+        DegradationModel(alpha, beta)
+        return
+
+
+if __name__ == "__main__":
+    my_degradation_model = DegradationModel.default()
+
+    print(my_degradation_model)

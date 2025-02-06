@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import typing
 
 import gymnasium as gym
 import numpy as np
@@ -24,10 +25,15 @@ class GenerationSystem:
 
     def _get_obs(self):
         state = self.R_VALUES[self.current_state]
-        return np.array([state,], dtype=dtype_int)
+        return np.array(
+            [
+                state,
+            ],
+            dtype=dtype_int,
+        )
 
     @classmethod
-    def default(cls) -> "GenerationSystem":
+    def default(cls) -> typing.Self:
         # paper: "The state space $\mathcal{S}_𝑟$ contains all the possible
         # values which the supply minus demand process can take. "
         R_VALUES = np.arange(start=-50, stop=50, step=1, dtype=dtype_int)
@@ -62,4 +68,10 @@ class GenerationSystem:
 
 
 if __name__ == "__main__":
-    pass
+    my_generation_system = GenerationSystem.default()
+
+    observation_space = my_generation_system.observation_space()
+    sample = observation_space.sample()
+    assert observation_space.contains(sample)
+
+    print(my_generation_system)
