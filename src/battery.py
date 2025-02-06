@@ -1,24 +1,24 @@
 from degradation import DegradationModel
-from dataclasses import dataclass
+from dataclasses import dataclass, InitVar, types
 
-@dataclass()
+import typing
+
+@dataclass
 class Battery:
-    def __init__(
-        self,
-        present_charge,
-        degradation_model: DegradationModel,
-        DTYPE: type,
-        CAPACITY_CHARGE,
-        RATE_DISCHARGE,
-        RATE_CHARGE,
-    ):
-        self.present_charge = DTYPE(present_charge)
-        self.degradation_model = degradation_model
-        self.DTYPE = DTYPE
+    present_charge: typing.Any
+    CAPACITY_CHARGE: typing.Any
+    RATE_DISCHARGE: typing.Any
+    RATE_CHARGE: typing.Any
+    degradation_model: DegradationModel
+    DTYPE: typing.Type
 
-        self.CAPACITY_CHARGE = DTYPE(CAPACITY_CHARGE)
-        self.RATE_DISCHARGE = DTYPE(RATE_DISCHARGE)
-        self.RATE_CHARGE = DTYPE(RATE_CHARGE)
+    def __post_init__(
+        self,
+    ):
+        self.present_charge = self.DTYPE(self.present_charge)
+        self.CAPACITY_CHARGE = self.DTYPE(self.CAPACITY_CHARGE)
+        self.RATE_DISCHARGE = self.DTYPE(self.RATE_DISCHARGE)
+        self.RATE_CHARGE = self.DTYPE(self.RATE_CHARGE)
 
 
     def able_charge(self):

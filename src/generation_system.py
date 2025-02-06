@@ -24,7 +24,7 @@ class GenerationSystem:
 
     def _get_obs(self):
         state = self.R_VALUES[self.current_state]
-        return state
+        return np.array([state,], dtype=dtype_int)
 
     @classmethod
     def default(cls) -> "GenerationSystem":

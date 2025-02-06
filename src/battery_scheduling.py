@@ -1,15 +1,16 @@
 import gymnasium as gym
-import numpy as np
 
 from storage_system import StorageSystem
 from generation_system import GenerationSystem
 
+from dataclasses import dataclass, field
 
+@dataclass
 class BatterySchedulingEnv(gym.Env):
-    def __init__(self):
-        self.storage_system: StorageSystem = StorageSystem.default()
-        self.generation_system: GenerationSystem = GenerationSystem.default()
-
+    storage_system: StorageSystem = field(default_factory=StorageSystem.default)
+    generation_system: GenerationSystem = field(default_factory=GenerationSystem.default)
+    
+    def __post_init__(self):
         self.observation_space = gym.spaces.Dict(
             {
                 "storage": self.storage_system.observation_space(),

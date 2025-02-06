@@ -1,10 +1,10 @@
 import gymnasium as gym
 import numpy as np
 
-from dataclasses import dataclass
+from dataclasses import dataclass, InitVar
 from typing import List
-from battery import Battery
 
+from battery import Battery
 from degradation import DegradationModel
 
 
@@ -14,24 +14,30 @@ DTYPE_INT: np.dtype = np.int32
 
 @dataclass
 class StorageSystem:
-    batteries: List[Battery]
+    batteries: InitVar[List[Battery]]
+
+    def __post_init__(self, batteries):
+        self.__batteries = batteries
 
     def observation_space(self) -> gym.spaces.Space[gym.core.ObsType]:
         obs_space = gym.spaces.Box(
-            low=np.zeros((len(self.batteries),), dtype=DTYPE),
-            high=np.array([battery.CAPACITY_CHARGE for battery in self.batteries]),
+            low=np.zeros((len(self.__batteries),), dtype=DTYPE),
+            high=np.array([battery.CAPACITY_CHARGE for battery in self.__batteries]),
             dtype=DTYPE,
         )
         return obs_space
 
     def _get_obs(self) -> gym.spaces.Space[gym.core.ObsType]:
         battery_states = np.array(
-            [battery.present_charge for battery in self.batteries]
+            [battery.present_charge for battery in self.__batteries]
         )
         return battery_states
 
+    def _get_info(self):
+        raise NotImplementedError
+
     def action_space(self) -> gym.spaces.Space[gym.core.ActType]:
-        range_charges = np.array([battery.able_charge() for battery in self.batteries])
+        range_charges = np.array([battery.able_charge() for battery in self.__batteries])
         able_discharges, able_charges = range_charges[:, 0], range_charges[:, 1]
 
         act_space = gym.spaces.Box(
