@@ -1,25 +1,22 @@
 from degradation import DegradationModel
-from dataclasses import dataclass, types
-
-import typing
-
+from dataclasses import dataclass
+import environment_typing as envt
 
 @dataclass
 class Battery:
-    present_charge: typing.Any
-    CAPACITY_CHARGE: typing.Any
-    RATE_DISCHARGE: typing.Any
-    RATE_CHARGE: typing.Any
+    present_charge: envt.Any
+    CAPACITY_CHARGE: envt.Any
+    RATE_DISCHARGE: envt.Any
+    RATE_CHARGE: envt.Any
     degradation_model: DegradationModel
-    DTYPE: typing.Type
 
     def __post_init__(
         self,
     ):
-        self.present_charge = self.DTYPE(self.present_charge)
-        self.CAPACITY_CHARGE = self.DTYPE(self.CAPACITY_CHARGE)
-        self.RATE_DISCHARGE = self.DTYPE(self.RATE_DISCHARGE)
-        self.RATE_CHARGE = self.DTYPE(self.RATE_CHARGE)
+        self.present_charge = envt.uint(self.present_charge)
+        self.CAPACITY_CHARGE = envt.uint(self.CAPACITY_CHARGE)
+        self.RATE_DISCHARGE = envt.int(self.RATE_DISCHARGE) # not uint because -1*D
+        self.RATE_CHARGE = envt.int(self.RATE_CHARGE)
 
     def able_charge(self):
         discharge = min(self.RATE_DISCHARGE, self.present_charge)
@@ -28,8 +25,7 @@ class Battery:
         return [discharge, charge]
 
     def charge_discharge(self, charge_amount):
-        if not (self.constraint(charge_amount)):
-            return
+        assert self.constraint(charge_amount)
         new_charge_level = self.present_charge + charge_amount
         self.present_charge = new_charge_level
 
@@ -54,12 +50,12 @@ if __name__ == "__main__":
         RATE_DISCHARGE=d,
         RATE_CHARGE=c,
         degradation_model=DegradationModel(alpha, beta),
-        DTYPE=int,
     )
 
     a_t = 25
     my_battery.charge_discharge(a_t)
     assert my_battery.present_charge == b_t + a_t
+
 
     D, C = my_battery.able_charge()
     assert [-D, C] == [-min(d, b_t), min(c, B - b_t)]

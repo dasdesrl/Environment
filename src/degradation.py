@@ -2,13 +2,13 @@ import numpy as np
 import typing
 from dataclasses import dataclass, InitVar
 
-DTYPE_FLOAT = np.float32
+import environment_typing as envt
 
 
 @dataclass
 class DegradationModel:
-    alpha: InitVar[DTYPE_FLOAT]
-    beta: InitVar[DTYPE_FLOAT]
+    alpha: InitVar[envt.float]
+    beta: InitVar[envt.float]
 
     def __post_init__(self, alpha, beta):
         self.__alpha = alpha
@@ -24,11 +24,13 @@ class DegradationModel:
     def default(cls) -> typing.Self:
         alpha = 0.4
         beta = 0.5
-        DegradationModel(alpha, beta)
-        return
+        degradation_model = DegradationModel(alpha, beta)
+        return degradation_model
 
 
 if __name__ == "__main__":
     my_degradation_model = DegradationModel.default()
 
-    print(my_degradation_model)
+    from pprint import pprint
+
+    pprint(my_degradation_model)

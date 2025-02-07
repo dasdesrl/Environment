@@ -7,9 +7,7 @@ import typing
 from battery import Battery
 from degradation import DegradationModel
 
-
-DTYPE: np.dtype = np.uint
-DTYPE_INT: np.dtype = np.int32
+import environment_typing as envt
 
 
 @dataclass
@@ -21,9 +19,9 @@ class StorageSystem:
 
     def observation_space(self) -> gym.spaces.Space[gym.core.ObsType]:
         obs_space = gym.spaces.Box(
-            low=np.zeros((len(self.__batteries),), dtype=DTYPE),
+            low=np.zeros((len(self.__batteries),), dtype=envt.uint),
             high=np.array([battery.CAPACITY_CHARGE for battery in self.__batteries]),
-            dtype=DTYPE,
+            dtype=envt.uint,
         )
         return obs_space
 
@@ -45,7 +43,7 @@ class StorageSystem:
         act_space = gym.spaces.Box(
             low=-able_discharges,
             high=able_charges,
-            dtype=DTYPE_INT,
+            dtype=envt.int,
         )
         return act_space
 
@@ -58,7 +56,6 @@ class StorageSystem:
                 degradation_model=DegradationModel(
                     alpha=np.random.rand(), beta=np.random.rand()
                 ),
-                DTYPE=DTYPE,
                 CAPACITY_CHARGE=100.0 * (1 + i * 0.2),
                 RATE_CHARGE=20.0 * (1 + i * 0.1),
                 RATE_DISCHARGE=20.0 * (1 + i * 0.1),

@@ -74,4 +74,6 @@ if __name__ == "__main__":
     sample = observation_space.sample()
     assert observation_space.contains(sample)
 
-    print(my_generation_system)
+    from pprint import pprint
+
+    pprint(my_generation_system)
