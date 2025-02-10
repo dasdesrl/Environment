@@ -1,9 +1,9 @@
+from dataclasses import dataclass, field
+
 import gymnasium as gym
 
-from .storage_system import StorageSystem
-from .generation_system import GenerationSystem
-
-from dataclasses import dataclass, field
+from src.generation_system import GenerationSystem
+from src.storage_system import StorageSystem
 
 
 @dataclass

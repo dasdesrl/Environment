@@ -1,8 +1,9 @@
-import numpy as np
 import typing
-from dataclasses import dataclass, InitVar
+from dataclasses import InitVar, dataclass
 
-from .environment_typing import envt
+import numpy as np
+
+from src.environment_typing import envt
 
 
 @dataclass

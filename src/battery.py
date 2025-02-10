@@ -1,6 +1,7 @@
-from .degradation import DegradationModel
 from dataclasses import dataclass
-from .environment_typing import envt
+
+from src.degradation import DegradationModel
+from src.environment_typing import envt
 
 
 @dataclass

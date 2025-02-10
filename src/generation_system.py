@@ -1,9 +1,8 @@
-from dataclasses import dataclass
 import typing
+from dataclasses import dataclass
 
 import gymnasium as gym
 import numpy as np
-
 
 dtype = np.uint
 dtype_int = np.int32

@@ -1,13 +1,12 @@
+import typing
+from dataclasses import InitVar, dataclass
+
 import gymnasium as gym
 import numpy as np
 
-from dataclasses import dataclass, InitVar
-import typing
-
-from .battery import Battery
-from .degradation import DegradationModel
-
-from .environment_typing import envt
+from src.battery import Battery
+from src.degradation import DegradationModel
+from src.environment_typing import envt
 
 
 @dataclass
