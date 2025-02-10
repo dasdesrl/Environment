@@ -1,7 +1,7 @@
 import gymnasium as gym
 
-from storage_system import StorageSystem
-from generation_system import GenerationSystem
+from .storage_system import StorageSystem
+from .generation_system import GenerationSystem
 
 from dataclasses import dataclass, field
 

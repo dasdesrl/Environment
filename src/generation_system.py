@@ -37,7 +37,7 @@ class GenerationSystem:
         # paper: "The state space $\mathcal{S}_𝑟$ contains all the possible
         # values which the supply minus demand process can take. "
         R_VALUES = np.arange(start=-50, stop=50, step=1, dtype=dtype_int)
-        current_state = dtype(np.random.choice(a=len(R_VALUES)))
+        current_state = 0
         TRANSITION_MATRIX = cls._create_transition_matrix(len(R_VALUES))
 
         generation_system = cls(

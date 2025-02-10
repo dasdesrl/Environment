@@ -2,7 +2,7 @@ import numpy as np
 import typing
 from dataclasses import dataclass, InitVar
 
-import environment_typing as envt
+from .environment_typing import envt
 
 
 @dataclass

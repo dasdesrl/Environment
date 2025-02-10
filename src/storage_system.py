@@ -4,10 +4,10 @@ import numpy as np
 from dataclasses import dataclass, InitVar
 import typing
 
-from battery import Battery
-from degradation import DegradationModel
+from .battery import Battery
+from .degradation import DegradationModel
 
-import environment_typing as envt
+from .environment_typing import envt
 
 
 @dataclass
@@ -54,7 +54,7 @@ class StorageSystem:
             Battery(
                 present_charge=50.0,
                 degradation_model=DegradationModel(
-                    alpha=np.random.rand(), beta=np.random.rand()
+                    alpha=1 / (i + 1), beta=1 / (2 * i + 1)
                 ),
                 CAPACITY_CHARGE=100.0 * (1 + i * 0.2),
                 RATE_CHARGE=20.0 * (1 + i * 0.1),
@@ -70,7 +70,6 @@ class StorageSystem:
 
 
 if __name__ == "__main__":
-    np.random.seed(0)
     my_storage_system = StorageSystem.default()
 
     observation_space = my_storage_system.observation_space()

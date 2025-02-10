@@ -1,6 +1,7 @@
-from degradation import DegradationModel
+from .degradation import DegradationModel
 from dataclasses import dataclass
-import environment_typing as envt
+from .environment_typing import envt
+
 
 @dataclass
 class Battery:
@@ -15,7 +16,7 @@ class Battery:
     ):
         self.present_charge = envt.uint(self.present_charge)
         self.CAPACITY_CHARGE = envt.uint(self.CAPACITY_CHARGE)
-        self.RATE_DISCHARGE = envt.int(self.RATE_DISCHARGE) # not uint because -1*D
+        self.RATE_DISCHARGE = envt.int(self.RATE_DISCHARGE)  # not uint because -1*D
         self.RATE_CHARGE = envt.int(self.RATE_CHARGE)
 
     def able_charge(self):
@@ -41,8 +42,8 @@ if __name__ == "__main__":
     d = 50
     c = 25
 
-    alpha = 0.01
-    beta = 0.2
+    alpha = envt.float(0.01)
+    beta = envt.float(0.2)
 
     my_battery = Battery(
         present_charge=b_t,
@@ -55,7 +56,6 @@ if __name__ == "__main__":
     a_t = 25
     my_battery.charge_discharge(a_t)
     assert my_battery.present_charge == b_t + a_t
-
 
     D, C = my_battery.able_charge()
     assert [-D, C] == [-min(d, b_t), min(c, B - b_t)]
