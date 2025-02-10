@@ -35,8 +35,10 @@ class BatterySchedulingEnv(gym.Env):
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
 
-        self.storage_system.reset(seed, options)
-        self.generation_system.reset(seed, options)
+        # uniform sample from observation_space
+        sample = self.observation_space.sample()
+        self.generation_system.current_state = sample["generation"]
+        self.storage_system.batteries = sample["storage"]
 
         initial_observation = self._get_obs()
         info = self._get_info()
@@ -47,7 +49,8 @@ class BatterySchedulingEnv(gym.Env):
         if self.constraints(action):
             pass
         else:
-            reward = -1000
+            # reward = -1000
+            pass
 
         return
 

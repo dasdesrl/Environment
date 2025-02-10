@@ -4,38 +4,29 @@ from dataclasses import dataclass
 import gymnasium as gym
 import numpy as np
 
-dtype = np.uint
-dtype_int = np.int32
-
+from .environment_typing import envt
 
 @dataclass
 class GenerationSystem:
-    current_state: dtype
+    current_state: envt.uint
     R_VALUES: np.typing.NDArray
     TRANSITION_MATRIX: np.typing.NDArray
 
     def observation_space(self):
-        obs_space = gym.spaces.Box(
-            low=self.R_VALUES.min(),
-            high=self.R_VALUES.max(),
-            dtype=dtype_int,
+        obs_space = gym.spaces.Discrete(
+            n=envt.uint(len(self.R_VALUES)),
         )
         return obs_space
 
     def _get_obs(self):
-        state = self.R_VALUES[self.current_state]
-        return np.array(
-            [
-                state,
-            ],
-            dtype=dtype_int,
-        )
+        value = self.R_VALUES[self.current_state]
+        return envt.int(value)
 
     @classmethod
     def default(cls) -> typing.Self:
         # paper: "The state space $\mathcal{S}_𝑟$ contains all the possible
         # values which the supply minus demand process can take. "
-        R_VALUES = np.arange(start=-50, stop=50, step=1, dtype=dtype_int)
+        R_VALUES = np.arange(start=-50, stop=50, step=1, dtype=envt.int)
         current_state = 0
         TRANSITION_MATRIX = cls._create_transition_matrix(len(R_VALUES))
 

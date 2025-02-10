@@ -1,5 +1,5 @@
 import typing
-from dataclasses import InitVar, dataclass
+from dataclasses import dataclass
 
 import gymnasium as gym
 import numpy as np
@@ -11,22 +11,19 @@ from src.environment_typing import envt
 
 @dataclass
 class StorageSystem:
-    batteries: InitVar[typing.List[Battery]]
-
-    def __post_init__(self, batteries):
-        self.__batteries = batteries
+    batteries: typing.List[Battery]
 
     def observation_space(self) -> gym.spaces.Space[gym.core.ObsType]:
         obs_space = gym.spaces.Box(
-            low=np.zeros((len(self.__batteries),), dtype=envt.uint),
-            high=np.array([battery.CAPACITY_CHARGE for battery in self.__batteries]),
+            low=np.zeros((len(self.batteries),), dtype=envt.uint),
+            high=np.array([battery.CAPACITY_CHARGE for battery in self.batteries]),
             dtype=envt.uint,
         )
         return obs_space
 
     def _get_obs(self) -> gym.spaces.Space[gym.core.ObsType]:
         battery_states = np.array(
-            [battery.present_charge for battery in self.__batteries]
+            [battery.present_charge for battery in self.batteries]
         )
         return battery_states
 
@@ -35,7 +32,7 @@ class StorageSystem:
 
     def action_space(self) -> gym.spaces.Space[gym.core.ActType]:
         range_charges = np.array(
-            [battery.able_charge() for battery in self.__batteries],
+            [battery.able_charge() for battery in self.batteries],
         )
         able_discharges, able_charges = range_charges[:, 0], range_charges[:, 1]
 

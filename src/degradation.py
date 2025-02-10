@@ -1,5 +1,5 @@
 import typing
-from dataclasses import InitVar, dataclass
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -8,12 +8,8 @@ from src.environment_typing import envt
 
 @dataclass
 class DegradationModel:
-    alpha: InitVar[envt.float]
-    beta: InitVar[envt.float]
-
-    def __post_init__(self, alpha, beta):
-        self.__alpha = alpha
-        self.__beta = beta
+    alpha: envt.float
+    beta: envt.float
 
     def percent_degradation(self, depth_of_discharge):
         stress_function_degradation = self.__alpha * np.exp(
