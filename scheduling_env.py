@@ -7,7 +7,7 @@ from .storage_system import StorageSystem
 
 
 @dataclass
-class BatterySchedulingEnv(gym.Env):
+class SchedulingEnv(gym.Env):
     storage_system: StorageSystem = field(default_factory=StorageSystem.default)
     generation_system: GenerationSystem = field(
         default_factory=GenerationSystem.default,
