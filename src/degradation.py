@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from src.environment_typing import envt
+from .environment_typing import envt
 
 
 @dataclass
@@ -12,8 +12,8 @@ class DegradationModel:
     beta: envt.float
 
     def percent_degradation(self, depth_of_discharge):
-        stress_function_degradation = self.__alpha * np.exp(
-            -self.__beta * depth_of_discharge
+        stress_function_degradation = self.alpha * np.exp(
+            -self.beta * depth_of_discharge
         )
         return stress_function_degradation
 

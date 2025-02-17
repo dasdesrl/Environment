@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from src.degradation import DegradationModel
-from src.environment_typing import envt
+from .degradation import DegradationModel
+from .environment_typing import envt
 
 
 @dataclass
@@ -20,14 +20,9 @@ class Battery:
         self.RATE_DISCHARGE = envt.int(self.RATE_DISCHARGE)  # not uint because -1*D
         self.RATE_CHARGE = envt.int(self.RATE_CHARGE)
 
-    def able_charge(self):
-        discharge = min(self.RATE_DISCHARGE, self.present_charge)
-        charge = min(self.RATE_CHARGE, self.CAPACITY_CHARGE - self.present_charge)
-
-        return [discharge, charge]
-
     def charge_discharge(self, charge_amount):
-        assert self.constraint(charge_amount)
+        satisfied = self.constraint(charge_amount)
+        assert satisfied, "BatteryChargeDischargeError: Tried to charge/discharge battery beyond constraints"
         new_charge_level = self.present_charge + charge_amount
         self.present_charge = new_charge_level
 
@@ -36,6 +31,11 @@ class Battery:
         upper_lower_constraint = bool(-D <= charge_amount <= C)
         return upper_lower_constraint
 
+    def able_charge(self):
+        discharge = envt.int(min(self.RATE_DISCHARGE, self.present_charge))
+        charge = envt.int(min(self.RATE_CHARGE, self.CAPACITY_CHARGE - self.present_charge))
+
+        return [discharge, charge]
 
 if __name__ == "__main__":
     B = 1000

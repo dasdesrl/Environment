@@ -2,8 +2,8 @@ from dataclasses import dataclass, field
 
 import gymnasium as gym
 
-from src.generation_system import GenerationSystem
-from src.storage_system import StorageSystem
+from .generation_system import GenerationSystem
+from .storage_system import StorageSystem
 
 
 @dataclass
@@ -30,7 +30,10 @@ class BatterySchedulingEnv(gym.Env):
         return obs
 
     def _get_info(self):
-        return None
+        present = [battery.present_charge for battery in self.storage_system.batteries]
+        capacities = [battery.CAPACITY_CHARGE for battery in self.storage_system.batteries]
+        info_dict = {"present_charge": present, "capacities": capacities}
+        return info_dict
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
@@ -38,7 +41,8 @@ class BatterySchedulingEnv(gym.Env):
         # uniform sample from observation_space
         sample = self.observation_space.sample()
         self.generation_system.current_state = sample["generation"]
-        self.storage_system.batteries = sample["storage"]
+        for battery, charge in zip(self.storage_system.batteries, sample["storage"]):
+            battery.present_charge = charge
 
         initial_observation = self._get_obs()
         info = self._get_info()
@@ -46,13 +50,25 @@ class BatterySchedulingEnv(gym.Env):
         return initial_observation, info
 
     def step(self, action: gym.core.ActType) -> tuple[gym.core.ObsType,]:
-        if self.constraints(action):
-            pass
-        else:
-            # reward = -1000
-            pass
+        satisfied = self.constraint(action)
+        assert satisfied, "Action did not conform to the constraints"
 
-        return
+        reward, terminated = self.storage_system.step(action)
+        self.generation_system.step()
+
+        observation = self._get_obs()
+        reward = reward
+        terminated = terminated
+        truncated = False
+        info = self._get_info()
+
+        return observation, reward, terminated, truncated, info
+
+    def constraint(self, action: gym.core.ActType):
+        satisfied_storage = self.storage_system.constraint(action)
+        satisfied_generation = self.generation_system.constraint(action)
+        satisfied = satisfied_storage and satisfied_generation
+        return satisfied
 
 
 if __name__ == "__main__":
