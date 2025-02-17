@@ -22,7 +22,9 @@ class Battery:
 
     def charge_discharge(self, charge_amount):
         satisfied = self.constraint(charge_amount)
-        assert satisfied, "BatteryChargeDischargeError: Tried to charge/discharge battery beyond constraints"
+        assert (
+            satisfied
+        ), "BatteryChargeDischargeError: Tried to charge/discharge battery beyond constraints"
         new_charge_level = self.present_charge + charge_amount
         self.present_charge = new_charge_level
 
@@ -33,9 +35,12 @@ class Battery:
 
     def able_charge(self):
         discharge = envt.int(min(self.RATE_DISCHARGE, self.present_charge))
-        charge = envt.int(min(self.RATE_CHARGE, self.CAPACITY_CHARGE - self.present_charge))
+        charge = envt.int(
+            min(self.RATE_CHARGE, self.CAPACITY_CHARGE - self.present_charge)
+        )
 
         return [discharge, charge]
+
 
 if __name__ == "__main__":
     B = 1000

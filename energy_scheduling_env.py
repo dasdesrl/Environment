@@ -7,7 +7,7 @@ from .storage_system import StorageSystem
 
 
 @dataclass
-class SchedulingEnv(gym.Env):
+class EnergySchedulingEnv(gym.Env):
     storage_system: StorageSystem = field(default_factory=StorageSystem.default)
     generation_system: GenerationSystem = field(
         default_factory=GenerationSystem.default,
@@ -31,7 +31,9 @@ class SchedulingEnv(gym.Env):
 
     def _get_info(self):
         present = [battery.present_charge for battery in self.storage_system.batteries]
-        capacities = [battery.CAPACITY_CHARGE for battery in self.storage_system.batteries]
+        capacities = [
+            battery.CAPACITY_CHARGE for battery in self.storage_system.batteries
+        ]
         info_dict = {"present_charge": present, "capacities": capacities}
         return info_dict
 
@@ -72,7 +74,7 @@ class SchedulingEnv(gym.Env):
 
 
 if __name__ == "__main__":
-    env = BatterySchedulingEnv()
+    env = EnergySchedulingEnv()
 
     observation_space = env.observation_space
     sample = env.observation_space.sample()

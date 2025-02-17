@@ -16,7 +16,9 @@ class StorageSystem:
     def observation_space(self) -> gym.spaces.Space[gym.core.ObsType]:
         obs_space = gym.spaces.Box(
             low=np.zeros((len(self.batteries),), dtype=envt.uint),
-            high=np.array([battery.CAPACITY_CHARGE for battery in self.batteries], dtype=envt.uint),
+            high=np.array(
+                [battery.CAPACITY_CHARGE for battery in self.batteries], dtype=envt.uint
+            ),
             dtype=envt.uint,
         )
         return obs_space
@@ -46,7 +48,9 @@ class StorageSystem:
         return act_space
 
     def constraint(self, action: gym.core.ActType):
-        batteries_satisfied = [b_i.constraint(a_i) for b_i, a_i in zip(self.batteries, action)]
+        batteries_satisfied = [
+            b_i.constraint(a_i) for b_i, a_i in zip(self.batteries, action)
+        ]
         satisfied = np.all(batteries_satisfied)
         return satisfied
 

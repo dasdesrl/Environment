@@ -6,6 +6,7 @@ import numpy as np
 
 from .environment_typing import envt
 
+
 @dataclass
 class GenerationSystem:
     current_state: envt.uint
@@ -29,9 +30,9 @@ class GenerationSystem:
         self.current_state = next_state
         return
 
-    def constraint(self, action:gym.core.ActType):
+    def constraint(self, action: gym.core.ActType):
         current_net_generation = self.R_VALUES[self.current_state]
-        satisfied = (np.sum(action) == current_net_generation)
+        satisfied = np.sum(action) == current_net_generation
         # satisfied = True
         return satisfied
 
@@ -65,7 +66,7 @@ class GenerationSystem:
         for i in range(n_states):
             distances = np.array([state_distance(i, j) for j in range(n_states)])
             # probs = np.exp(-0.5 * distances)  # Exponential decay with distance
-            probs = np.exp(-0.01 *distances)
+            probs = np.exp(-0.01 * distances)
 
             probs /= np.sum(probs)  # Normalize
             P[i] = probs
