@@ -14,6 +14,7 @@ class StorageSystem:
     batteries: typing.List[Battery]
 
     def observation_space(self) -> gym.spaces.Space[gym.core.ObsType]:
+        # MultiDiscrete with `start`, Box could break in SB3
         obs_space = gym.spaces.Box(
             low=np.zeros((len(self.batteries),), dtype=envt.uint),
             high=np.array(
@@ -31,21 +32,26 @@ class StorageSystem:
         return battery_states
 
     def _get_info(self):
-        raise NotImplementedError
+        action_space = self.action_space()
+        low_action, high_action = action_space.low, action_space.high
+        info_dict = {"low_action": low_action, "high_action": high_action}
+        return info_dict
 
     def action_space(self) -> gym.spaces.Space[gym.core.ActType]:
-        range_charges = np.array(
-            [battery.able_charge() for battery in self.batteries],
+        extremes_range = np.array(
+            [
+                [battery.CAPACITY_CHARGE, battery.CAPACITY_CHARGE]
+                for battery in self.batteries
+            ],
             dtype=envt.int,
         )
-        able_discharges, able_charges = range_charges[:, 0], range_charges[:, 1]
-
-        act_space = gym.spaces.Box(
-            low=-able_discharges,
-            high=able_charges,
+        extreme_discharges, extreme_charges = extremes_range[:, 0], extremes_range[:, 1]
+        extreme_act_space = gym.spaces.Box(
+            low=-extreme_discharges,
+            high=+extreme_charges,
             dtype=envt.int,
         )
-        return act_space
+        return extreme_act_space
 
     def constraint(self, action: gym.core.ActType):
         batteries_satisfied = [
@@ -53,6 +59,22 @@ class StorageSystem:
         ]
         satisfied = np.all(batteries_satisfied)
         return satisfied
+
+    def action_mask(self) -> gym.spaces.Space[gym.core.ActType]:
+        range_charges = np.array(
+            [battery.able_charge() for battery in self.batteries],
+            dtype=envt.int,
+        )
+        able_discharges, able_charges = range_charges[:, 0], range_charges[:, 1]
+
+        # MultiDiscrete with `start`, Box could break in SB3
+        act_space = gym.spaces.Box(
+            low=-able_discharges,
+            high=able_charges,
+            dtype=envt.int,
+        )
+
+        return act_space
 
     def step(self, action: gym.core.ActType):
         rewards = []

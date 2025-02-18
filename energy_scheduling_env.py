@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 
 import gymnasium as gym
+import numpy as np
 
 from .generation_system import GenerationSystem
 from .storage_system import StorageSystem
@@ -20,7 +21,9 @@ class EnergySchedulingEnv(gym.Env):
                 "generation": self.generation_system.observation_space(),
             }
         )
-        self.action_space = self.storage_system.action_space()
+        self.action_space = (
+            self.storage_system.action_space()
+        )  # what is the action space
 
     def _get_obs(self):
         obs = {
@@ -30,11 +33,9 @@ class EnergySchedulingEnv(gym.Env):
         return obs
 
     def _get_info(self):
-        present = [battery.present_charge for battery in self.storage_system.batteries]
-        capacities = [
-            battery.CAPACITY_CHARGE for battery in self.storage_system.batteries
-        ]
-        info_dict = {"present_charge": present, "capacities": capacities}
+        storage_info_dict = self.storage_system._get_info()
+        generation_info_dict = self.generation_system._get_info()
+        info_dict = storage_info_dict | generation_info_dict
         return info_dict
 
     def reset(self, seed=None, options=None):
@@ -54,6 +55,14 @@ class EnergySchedulingEnv(gym.Env):
     def step(self, action: gym.core.ActType) -> tuple[gym.core.ObsType,]:
         satisfied = self.constraint(action)
         assert satisfied, "Action did not conform to the constraints"
+        if not satisfied:
+            observation = self._get_obs()
+            reward = -np.inf
+            terminated = False
+            truncated = False
+            info = self._get_info()
+
+            return observation, reward, terminated, truncated, info
 
         reward, terminated = self.storage_system.step(action)
         self.generation_system.step()
@@ -71,6 +80,27 @@ class EnergySchedulingEnv(gym.Env):
         satisfied_generation = self.generation_system.constraint(action)
         satisfied = satisfied_storage and satisfied_generation
         return satisfied
+
+    def action_masks(self):
+        storage_constrained_action_space = self.storage_system.action_mask()
+
+        low_action, high_action = (
+            storage_constrained_action_space.low,
+            storage_constrained_action_space.high,
+        )
+        storage_constrained_grid = np.meshgrid(
+            *[np.arange(i, j + 1) for i, j in zip(low_action, high_action)]
+        )
+        storage_constrained_possible_actions = np.vstack(
+            list(map(np.ravel, storage_constrained_grid))
+        ).T
+
+        generation_mask = self.generation_system.action_mask(
+            storage_constrained_possible_actions
+        )
+
+        masked_actions = storage_constrained_possible_actions[generation_mask]
+        return masked_actions
 
 
 if __name__ == "__main__":

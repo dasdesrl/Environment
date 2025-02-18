@@ -20,8 +20,12 @@ class GenerationSystem:
         return obs_space
 
     def _get_obs(self):
-        value = self.R_VALUES[self.current_state]
-        return envt.int(value)
+        return self.current_state
+
+    def _get_info(self):
+        actual_generation = self.R_VALUES[self.current_state]
+        info_dict = {"actual_generation": actual_generation}
+        return info_dict
 
     def step(self):
         next_state = np.random.choice(
@@ -33,15 +37,20 @@ class GenerationSystem:
     def constraint(self, action: gym.core.ActType):
         current_net_generation = self.R_VALUES[self.current_state]
         satisfied = np.sum(action) == current_net_generation
-        # satisfied = True
         return satisfied
+
+    def action_mask(self, possible_actions):
+        current_generation = self.R_VALUES[self.current_state]
+        mask = np.sum(possible_actions, axis=1) == current_generation
+
+        return mask
 
     @classmethod
     def default(cls) -> typing.Self:
         # paper: "The state space $\mathcal{S}_𝑟$ contains all the possible
         # values which the supply minus demand process can take. "
         # R_VALUES = np.arange(start=-50, stop=50, step=1, dtype=envt.int)
-        R_VALUES = np.array([-4, -1, 1, 5])
+        R_VALUES = np.array([-4, -1, 1, 5], dtype=envt.int)
         current_state = 0
         TRANSITION_MATRIX = cls._create_transition_matrix(len(R_VALUES))
 
