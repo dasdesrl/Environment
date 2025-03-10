@@ -34,6 +34,14 @@ class GenerationSystem:
         self.current_state = next_state
         return
 
+    def legality_penalty(self, action: gym.core.ActType):
+        current_generation = self.R_VALUES[self.current_state]
+        total_of_action = sum(action)
+        net_difference = current_generation - total_of_action
+
+        how_far_from_sum_of_actions_equals_generation = abs(net_difference)
+        return how_far_from_sum_of_actions_equals_generation
+
     def constraint(self, action: gym.core.ActType):
         current_net_generation = self.R_VALUES[self.current_state]
         satisfied = np.sum(action) == current_net_generation

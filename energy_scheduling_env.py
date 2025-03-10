@@ -57,7 +57,10 @@ class EnergySchedulingEnv(gym.Env):
         assert satisfied, "Action did not conform to the constraints"
         if not satisfied:
             observation = self._get_obs()
-            reward = -np.inf
+            reward = -(
+                self.storage_system.legality_penalty(action)
+                + self.generation_system.legality_penalty(action)
+            )
             terminated = False
             truncated = False
             info = self._get_info()
@@ -65,6 +68,19 @@ class EnergySchedulingEnv(gym.Env):
             return observation, reward, terminated, truncated, info
 
         reward, terminated = self.storage_system.step(action)
+
+        present_charges = [
+            battery.present_charge for battery in self.storage_system.batteries
+        ]
+
+        info_dict = self._get_info()
+        net_generation = info_dict["actual_generation"]
+        no_charge_left = sum(present_charges) < -net_generation
+        no_capacity_left = (
+            sum(self.storage_system.observation_space.high - present_charges)
+            < net_generation
+        )
+        terminated = terminated or (no_charge_left or no_capacity_left)
         self.generation_system.step()
 
         observation = self._get_obs()

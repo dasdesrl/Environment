@@ -53,6 +53,22 @@ class StorageSystem:
         )
         return extreme_act_space
 
+    def legality_penalty(self, action_vector: gym.core.ActType):
+        constrained_act_space = self.action_mask()
+        low_action, high_action = constrained_act_space.low, constrained_act_space.high
+
+        num_batteries = len(self.batteries)
+        clipped_action_vector = [
+            np.clip(action_vector[i], low_action[i], high_action[i])
+            for i in range(num_batteries)
+        ]
+        legal_separation_vector = action_vector - clipped_action_vector
+
+        manhatten_norm = lambda sep: np.linalg.norm(sep, ord=1)
+
+        how_far_from_legal_action = manhatten_norm(legal_separation_vector)
+        return how_far_from_legal_action
+
     def constraint(self, action: gym.core.ActType):
         batteries_satisfied = [
             b_i.constraint(a_i) for b_i, a_i in zip(self.batteries, action)
