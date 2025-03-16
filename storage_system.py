@@ -33,7 +33,7 @@ class StorageSystem:
 
     def _get_info(self):
         action_space = self.action_space()
-        low_action, high_action = action_space.low, action_space.high
+        low_action, high_action = action_space.start, action_space.nvec
         info_dict = {"low_action": low_action, "high_action": high_action}
         return info_dict
 
@@ -46,9 +46,9 @@ class StorageSystem:
             dtype=envt.int,
         )
         extreme_discharges, extreme_charges = extremes_range[:, 0], extremes_range[:, 1]
-        extreme_act_space = gym.spaces.Box(
-            low=-extreme_discharges,
-            high=+extreme_charges,
+        extreme_act_space = gym.spaces.MultiDiscrete(
+            nvec=+extreme_charges,
+            start=-extreme_discharges,
             dtype=envt.int,
         )
         return extreme_act_space
@@ -64,7 +64,7 @@ class StorageSystem:
         ]
         legal_separation_vector = action_vector - clipped_action_vector
 
-        manhatten_norm = lambda sep: np.linalg.norm(sep, ord=1)
+        manhatten_norm = lambda sep: sum(sep)
 
         how_far_from_legal_action = manhatten_norm(legal_separation_vector)
         return how_far_from_legal_action
@@ -74,6 +74,9 @@ class StorageSystem:
             b_i.constraint(a_i) for b_i, a_i in zip(self.batteries, action)
         ]
         satisfied = np.all(batteries_satisfied)
+        if not satisfied:
+            # print(f"Action did not satisfy storage constraint {action} {batteries_satisfied}")
+            pass
         return satisfied
 
     def action_mask(self) -> gym.spaces.Space[gym.core.ActType]:

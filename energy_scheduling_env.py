@@ -52,18 +52,21 @@ class EnergySchedulingEnv(gym.Env):
 
         return initial_observation, info
 
+    def legality_penalty(self, action):
+        return (
+            self.storage_system.legality_penalty(action)
+            + self.generation_system.legality_penalty(action)
+        )**2
+
     def step(self, action: gym.core.ActType) -> tuple[gym.core.ObsType,]:
         satisfied = self.constraint(action)
-        assert satisfied, "Action did not conform to the constraints"
+        # assert satisfied, f"Action {action} did not conform to the constraints"
         if not satisfied:
             observation = self._get_obs()
-            reward = -(
-                self.storage_system.legality_penalty(action)
-                + self.generation_system.legality_penalty(action)
-            )
+            reward = -self.legality_penalty(action)
             terminated = False
             truncated = False
-            info = self._get_info()
+            info = self._get_info() | {"invalid_action": False}
 
             return observation, reward, terminated, truncated, info
 
@@ -74,10 +77,10 @@ class EnergySchedulingEnv(gym.Env):
         ]
 
         info_dict = self._get_info()
-        net_generation = info_dict["actual_generation"]
+        net_generation = info_dict["net_generation"]
         no_charge_left = sum(present_charges) < -net_generation
         no_capacity_left = (
-            sum(self.storage_system.observation_space.high - present_charges)
+            sum(self.storage_system.observation_space().high - present_charges)
             < net_generation
         )
         terminated = terminated or (no_charge_left or no_capacity_left)
@@ -87,9 +90,32 @@ class EnergySchedulingEnv(gym.Env):
         reward = reward
         terminated = terminated
         truncated = False
-        info = self._get_info()
+        info = self._get_info() | {"invalid_action": True}
 
         return observation, reward, terminated, truncated, info
+
+    def render(self):
+        capacities = []
+        rates = []
+        charges = []
+        for battery in self.storage_system.batteries:
+            capacity = battery.CAPACITY_CHARGE
+            rate = battery.able_charge()
+            charge = battery.present_charge
+
+            capacities.append(capacity)
+            rates.append(rate)
+            charges.append(charge)
+
+            generation = self.generation_system._get_net_generation()
+
+        renderer = {
+            "capacities": capacities,
+            "rates": rates,
+            "charges": charges,
+            "generation": generation,
+        }
+        print(renderer)
 
     def constraint(self, action: gym.core.ActType):
         satisfied_storage = self.storage_system.constraint(action)

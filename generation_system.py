@@ -22,9 +22,12 @@ class GenerationSystem:
     def _get_obs(self):
         return self.current_state
 
+    def _get_net_generation(self):
+        net_generation = self.R_VALUES[self.current_state]
+        return net_generation
+
     def _get_info(self):
-        actual_generation = self.R_VALUES[self.current_state]
-        info_dict = {"actual_generation": actual_generation}
+        info_dict = {"net_generation": self._get_net_generation()}
         return info_dict
 
     def step(self):
@@ -35,7 +38,7 @@ class GenerationSystem:
         return
 
     def legality_penalty(self, action: gym.core.ActType):
-        current_generation = self.R_VALUES[self.current_state]
+        current_generation = self._get_net_generation()
         total_of_action = sum(action)
         net_difference = current_generation - total_of_action
 
@@ -43,12 +46,15 @@ class GenerationSystem:
         return how_far_from_sum_of_actions_equals_generation
 
     def constraint(self, action: gym.core.ActType):
-        current_net_generation = self.R_VALUES[self.current_state]
+        current_net_generation = self._get_net_generation()
         satisfied = np.sum(action) == current_net_generation
+        if not satisfied:
+            # print(f"Action did not satisfy generation constraint sum({action}) clippedby generation {current_net_generation}")
+            pass
         return satisfied
 
     def action_mask(self, possible_actions):
-        current_generation = self.R_VALUES[self.current_state]
+        current_generation = self._get_net_generation()
         mask = np.sum(possible_actions, axis=1) == current_generation
 
         return mask
